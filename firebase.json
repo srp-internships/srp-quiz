@@ -20,11 +20,17 @@
     }
   ],
   "hosting": {
-    "public": "dist/srp-quiz",
+    "public": "dist/srp-quiz/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]  
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }
