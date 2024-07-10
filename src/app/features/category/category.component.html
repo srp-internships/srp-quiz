@@ -1,1 +1,24 @@
-<p>dashboard-page works!</p>
+<div class="container mx-auto w-full my-10 p-8 bg-white rounded-lg shadow-md">
+  <h2 class="mb-4 text-2xl font-bold">Categories</h2>
+  
+  <div class="flex mb-4 gap-2">
+    <input (keydown.enter)="addCategory()" type="text" placeholder="Category Name" class="px-3 py-2 border rounded w-full" [(ngModel)]="newCategoryName">
+    <button class="bg-blue-500 text-white px-4 py-2 rounded" (click)="addCategory()">Create</button>
+  </div>
+  <ul>
+    <li *ngFor="let category of categories" class="py-4 border-b border-gray-200">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-semibold">
+          <span *ngIf="editCategoryId !== category.id">{{ category.name }}</span>
+          <input *ngIf="editCategoryId === category.id" type="text" [(ngModel)]="editedCategoryName" class="px-3 py-2 border rounded w-full" (keydown.enter)="updateCategory()">
+        </h3>
+        <div class="flex gap-2">
+          <button *ngIf="editCategoryId !== category.id" class="text-white px-4 py-2 rounded-md bg-green-500" (click)="editCategory(category)">Edit</button>
+          <button *ngIf="editCategoryId === category.id" class="text-white px-4 py-2 rounded-md bg-green-500" (click)="updateCategory()">Save</button>
+          <button *ngIf="editCategoryId === category.id" class="text-white px-4 py-2 rounded-md bg-gray-500" (click)="cancelEdit()">Cancel</button>
+          <button class="text-white px-4 py-2 rounded-md bg-red-500" (click)="deleteCategory(category.id)">Delete</button>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
