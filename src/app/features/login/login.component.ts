@@ -37,7 +37,7 @@ export class LoginPageComponent {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       this.authService.login(email, password).then(() => {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/category']);
       })
       .catch((err) => {
         this.toastr.error('error', 'Login error');

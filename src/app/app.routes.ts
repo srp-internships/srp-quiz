@@ -1,15 +1,18 @@
 import { Routes } from '@angular/router';
 import { LoginPageComponent } from './features/login/login.component';
-import { DashboardPageComponent } from './features/category/category.component';
+import { CategoryComponent } from './features/category/category.component';
+import { authGuard } from './core/guard/auth.guard';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginPageComponent, title: 'SRP Quiz - Login' },
   {
     path: 'login',
-    loadChildren: () =>
-      import('./features/login/login.routres').then((m) => m.loginRoutes),
-    data: { title: 'SRP Quiz - Login' },
+    title: 'SRP Quiz - Login',
+    loadComponent: () =>
+      import('./features/login/login.component').then(
+        (c) => c.LoginPageComponent
+      ),
   },
 
-  { path: 'dashboard', component: DashboardPageComponent },
+  { path: 'category', component: CategoryComponent , canActivate: [authGuard] },
+  { path: '**', redirectTo: '/login' },
 ];
