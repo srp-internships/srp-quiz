@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'srp-dashboard-page',
+  selector: 'srp-category-page',
   standalone: true,
   imports: [],
-  templateUrl: './dashboard-page.component.html',
-  styleUrl: './dashboard-page.component.scss'
+  templateUrl: './category.component.html',
+  styleUrl: './category.component.scss'
 })
 export class DashboardPageComponent {
 

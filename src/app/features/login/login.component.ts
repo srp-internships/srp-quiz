@@ -8,15 +8,15 @@ import {
 import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { CommonModule } from '@angular/common';
-import { MatSnackBar } from '@angular/material/snack-bar'; 
+import { ToastrService } from 'ngx-toastr';
 
 
 @Component({
   selector: 'srp-login-page',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './login-page.component.html',
-  styleUrls: ['./login-page.component.scss'],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginPageComponent {
   loginForm: FormGroup;
@@ -25,7 +25,7 @@ export class LoginPageComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private toastr: ToastrService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -36,23 +36,13 @@ export class LoginPageComponent {
   onSubmit() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
-          this.openSnackBar('Login successful!');
-        },
-        error: (err) => {
-          console.error('Login error:', err);
-          this.openSnackBar('Login failed. Please try again.');
-        },
+      this.authService.login(email, password).then(() => {
+        this.router.navigate(['/dashboard']);
+      })
+      .catch((err) => {
+        this.toastr.error('error', 'Login error');
       });
     }
   }
 
-  openSnackBar(message: string) {
-    this.snackBar.open(message, 'Close', {
-      duration: 2000,
-      verticalPosition: 'top',
-    });
-  }
 }
