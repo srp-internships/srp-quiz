@@ -10,7 +10,6 @@ import { AuthService } from '../../shared/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 
-
 @Component({
   selector: 'srp-login-page',
   standalone: true,
@@ -40,9 +39,8 @@ export class LoginPageComponent {
         this.router.navigate(['/category']);
       })
       .catch((err) => {
-        this.toastr.error('error', 'Login error');
+        this.toastr.error('Please try again', 'Invalid email or password');
       });
     }
   }
-
 }

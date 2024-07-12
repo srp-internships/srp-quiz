@@ -1,11 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Auth, signInWithEmailAndPassword, User } from '@angular/fire/auth';
+import {
+  Auth,
+  authState,
+  signInWithEmailAndPassword,
+  User,
+} from '@angular/fire/auth';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private user: User | null = null;
+  authState$ = authState(this.auth);
 
   constructor(private auth: Auth) {
     this.auth.onAuthStateChanged((user) => {
@@ -13,22 +20,13 @@ export class AuthService {
     });
   }
 
-  isLoggedIn(): boolean {
-    return this.user !== null || localStorage.getItem('authToken') !== null;
-  }
-
-  login(email: string, password: string): Promise<any> {
-    return signInWithEmailAndPassword(this.auth, email, password).then((userSave) => {
-      this.user = userSave.user;
-      return userSave.user.getIdToken().then((token) => {
-        localStorage.setItem('authToken', token);
-      });
+  login(email: string, password: string): Promise<void> {
+    return signInWithEmailAndPassword(this.auth, email, password).then(() => {
+      this.user = this.auth.currentUser;
     });
   }
 
-  logout(): Promise<any> {
-    localStorage.removeItem('authToken');
-    this.user = null;
+  logout(): Promise<void> {
     return this.auth.signOut();
   }
 
@@ -36,7 +34,13 @@ export class AuthService {
     return this.user;
   }
 
-  getIdToken(): string | null {
-    return localStorage.getItem('authToken');
+  isLoggedIn(): boolean {
+    return this.user !== null;
   }
+
+  async profile(): Promise<User | null> {
+    this.user = await firstValueFrom(this.authState$);
+    return this.user;
+  }
+  
 }
