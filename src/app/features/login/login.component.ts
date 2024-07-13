@@ -8,14 +8,14 @@ import {
 import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { CommonModule } from '@angular/common';
-
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'srp-login-page',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule],
-  templateUrl: './login-page.component.html',
-  styleUrls: ['./login-page.component.scss'],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginPageComponent {
   loginForm: FormGroup;
@@ -24,6 +24,7 @@ export class LoginPageComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private toastr: ToastrService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -34,15 +35,12 @@ export class LoginPageComponent {
   onSubmit() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe({
-        next: () => {
-          this.router.navigate(['/dashboard']);
-        },
-        error: (err) => {
-          console.error('Login error:', err);
-        },
+      this.authService.login(email, password).then(() => {
+        this.router.navigate(['/category']);
+      })
+      .catch((err) => {
+        this.toastr.error('Please try again', 'Invalid email or password');
       });
     }
   }
-
 }
