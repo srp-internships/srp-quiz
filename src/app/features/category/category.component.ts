@@ -2,19 +2,21 @@ import { Component, OnInit } from '@angular/core';
 import { CategoryService } from '../../core/category-service/category.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { Category } from '../../interface/category.interface';
 
 @Component({
   selector: 'srp-category.component',
   standalone: true,
-  imports: [CommonModule , FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './category.component.html',
-  styleUrl: './category.component.scss'
+  styleUrls: ['./category.component.scss']
 })
-export class categoryComponent implements OnInit {
-  categories!: any[];
+export class CategoryComponent implements OnInit {
+  categories$!: Observable<Category[]>;
   newCategoryName: string = '';
-  editCategoryId: string | null = null; 
-  editedCategoryName: string = ''; 
+  editCategoryId: string | null = null;
+  editedCategoryName: string = '';
 
   constructor(private categoryService: CategoryService) { }
 
@@ -23,58 +25,46 @@ export class categoryComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.categoryService.getCategories().subscribe(categories => {
-      this.categories = categories;
-    });
+    this.categories$ = this.categoryService.getCategories();
   }
 
-  addCategory(): void {
+  async addCategory(): Promise<void> {
     if (this.newCategoryName.trim() !== '') {
-      this.categoryService.addCategory(this.newCategoryName)
-        .then(() => {
-          console.log('success');
-          this.newCategoryName = ''; 
-          this.loadCategories(); 
-        })
-        .catch(error => {
-          console.error('Error ', error);
-        });
+      try {
+        await this.categoryService.addCategory(this.newCategoryName);
+        this.newCategoryName = '';
+      } catch (error) {
+        console.error('error: ', error);
+      }
     }
   }
 
-  editCategory(category: any): void {
+  editCategory(category: Category): void {
     this.editCategoryId = category.id;
     this.editedCategoryName = category.name;
   }
 
-  updateCategory(): void {
+  async updateCategory(): Promise<void> {
     if (this.editCategoryId && this.editedCategoryName.trim() !== '') {
-      this.categoryService.updateCategory(this.editCategoryId, this.editedCategoryName)
-        .then(() => {
-          console.log('success');
-          this.editCategoryId = null;
-          this.editedCategoryName = '';
-          this.loadCategories(); 
-        })
-        .catch(error => {
-          console.error('Error ', error);
-        });
+      try {
+        await this.categoryService.updateCategory(this.editCategoryId, this.editedCategoryName);
+        this.editCategoryId = null;
+        this.editedCategoryName = '';
+      } catch (error) {
+        console.error('error: ', error);
+      }
     }
   }
-
   cancelEdit(): void {
     this.editCategoryId = null;
     this.editedCategoryName = '';
   }
 
-  deleteCategory(categoryId: string): void {
-    this.categoryService.deleteCategory(categoryId)
-      .then(() => {
-        console.log('succes');
-        this.loadCategories(); 
-      })
-      .catch(error => {
-        console.error('Error: ', error);
-      });
+  async deleteCategory(categoryId: string): Promise<void> {
+    try {
+      await this.categoryService.deleteCategory(categoryId);
+    } catch (error) {
+      console.error('error ', error);
+    }
   }
 }

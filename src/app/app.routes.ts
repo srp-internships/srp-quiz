@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { categoryComponent } from './features/category/category.component';
+import { CategoryComponent } from './features/category/category.component';
 import { authGuard } from './core/guard/auth.guard';
 
 export const routes: Routes = [
@@ -12,6 +12,6 @@ export const routes: Routes = [
       ),
   },
 
-  { path: 'category', component: categoryComponent , canActivate: [authGuard] },
+  { path: 'category', component: CategoryComponent , canActivate: [authGuard] },
   { path: '**', redirectTo: '/login' },
 ];
