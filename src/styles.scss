@@ -3,4 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply bg-gray-200;
+}
+
 @import 'ngx-toastr/toastr';
