@@ -1,0 +1,28 @@
+<div class="container mx-auto w-full my-10 p-8 bg-white rounded-lg shadow-md">
+  <p class="mb-3 text-2xl font-semibold">Category filter</p>
+  <select class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" (change)="onCategoryChange($event)">
+    <option value="" disabled selected>Select category</option>
+    <option *ngFor="let category of categories$ | async" [value]="category.id">{{ category.name }}</option>
+  </select>
+
+  <div class="my-4">
+    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" (click)="openModal()">
+      Create Quiz
+    </button>
+  </div>
+
+  <div class="my-4" *ngIf="quizzes.length > 0">
+    <div *ngFor="let quiz of quizzes" class="bg-white rounded-lg mb-3 shadow-md p-4">
+      <h3 class="font-medium text-lg mb-2">{{ quiz.question }}</h3>
+      <ul class="list-disc list-inside mb-2">
+        <li *ngFor="let variant of quiz.variants" [ngClass]="{'font-bold': variant.correct, 'text-green-500': variant.correct}">{{ variant.letter }}: {{ variant.variant }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div *ngIf="quizzes.length === 0">
+    No quizzes available.
+  </div>
+</div>
+
+<srp-modal-quiz *ngIf="isModalOpen" (closeModal)="closeModal()"></srp-modal-quiz>
