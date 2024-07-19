@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, collection , CollectionReference , query , where , addDoc} from '@angular/fire/firestore';
+import { Firestore, collectionData, collection, CollectionReference, query, where, addDoc, doc, updateDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Quiz } from '../../interface/quiz.interface';
 
@@ -30,5 +30,14 @@ export class QuizService {
 
   addQuiz(quizData: any): Promise<any> {
     return addDoc(this.quizzesCollection, quizData);
+  }
+
+  updateQuiz(quizData: Quiz): Promise<void> {
+    const quizDocRef = doc(this.firestore, `quizzes/${quizData.id}`);
+    return updateDoc(quizDocRef, {
+      question: quizData.question,
+      categoryId: quizData.categoryId,
+      variants: quizData.variants
+    });
   }
 }

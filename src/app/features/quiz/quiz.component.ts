@@ -1,24 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { QuizService } from '../../core/service/quiz.service';
+import { Quiz } from '../../interface/quiz.interface';
 import { ModalQuizComponent } from './modal-quiz/modal-quiz.component';
 import { CommonModule } from '@angular/common';
-import { Quiz } from '../../interface/quiz.interface';
-import { Observable } from 'rxjs';
-import { OnInit } from '@angular/core';
-import { QuizService } from '../../core/service/quiz.service';
 
 @Component({
   selector: 'srp-quiz',
   standalone: true,
-  imports: [ModalQuizComponent , CommonModule],
+  imports: [ModalQuizComponent, CommonModule],
   templateUrl: './quiz.component.html',
-  styleUrl: './quiz.component.scss'
+  styleUrls: ['./quiz.component.scss']
 })
 export class QuizComponent implements OnInit {
   categories$: Observable<any[]> | undefined;
   quizzes: Quiz[] = [];
   selectedCategoryId: string | null = null;
   isModalOpen: boolean = false;
-  quizToEdit: any = null;
+  quizToEdit: Quiz | null = null;
 
   constructor(private quizService: QuizService) {}
 
@@ -43,15 +42,16 @@ export class QuizComponent implements OnInit {
 
   openModal(): void {
     this.isModalOpen = true;
-    this.quizToEdit = null; // Сбрасываем данные редактирования
+    this.quizToEdit = null;
   }
 
-  editQuiz(quiz: any): void {
+  editQuiz(quiz: Quiz): void {
     this.quizToEdit = quiz;
-    this.openModal();
+    this.isModalOpen = true;
   }
 
   closeModal(): void {
     this.isModalOpen = false;
+    this.quizToEdit = null;
   }
 }

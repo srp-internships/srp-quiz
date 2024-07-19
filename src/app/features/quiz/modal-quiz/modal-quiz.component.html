@@ -1,11 +1,7 @@
-<div
-  class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
->
-  <div
-    class="bg-white rounded-lg shadow-lg max-w-3xl w-full max-h-screen overflow-auto mt-8 p-6"
-  >
-    <h2 class="text-xl font-medium mb-4">Create New Quiz Question</h2>
-    <form (ngSubmit)="onCreateQuiz()" #quizForm="ngForm">
+<div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full max-h-screen overflow-auto mt-8 p-6">
+    <h2 class="text-xl font-medium mb-4">{{ updateModeData ? 'Edit Quiz Question' : 'Create New Quiz Question' }}</h2>
+    <form (ngSubmit)="onSubmitQuiz()" #quizForm="ngForm">
       <div class="mb-4">
         <label for="question" class="mb-2 text-sm font-medium">Question Title:</label>
         <input
@@ -43,42 +39,42 @@
       </div>
 
       <div>
-      <label class="text-sm font-medium mb-4">Variants</label>
-      <div *ngFor="let variant of newQuiz.variants; let i = index" class="mb-4">
-        <div class="flex items-center mb-2">
-          <label class="text-lg font-medium pr-1" >{{ variant.letter }}</label>
-          <input
-            type="text"
-            [(ngModel)]="variant.variant"
-            [ngModelOptions]="{ standalone: true }"
-            name="variant{{ i }}"
-            class="w-full px-3 py-2 text-lg text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline"
-            placeholder="Enter answer"
-            required
-            #variantInput="ngModel"
-          />
-          <input
-            type="checkbox"
-            [(ngModel)]="variant.correct"
-            [ngModelOptions]="{ standalone: true }"
-            class="ml-2 h-6 w-6 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-          />
-          <span class="ml-1 text-sm text-gray-600">Correct</span>
-          <button
-            type="button"
-            class="ml-2 text-red-500 hover:text-red-700"
-            (click)="removeVariant(i)"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div *ngIf="variantInput.invalid && variantInput.touched" class="text-red-500 text-sm mt-1">
-          Answer {{ variant.letter }} is required.
+        <label class="text-sm font-medium mb-4">Variants</label>
+        <div *ngFor="let variant of newQuiz.variants; let i = index" class="mb-4">
+          <div class="flex items-center mb-2">
+            <label class="text-lg font-medium pr-1">{{ variant.letter }}</label>
+            <input
+              type="text"
+              [(ngModel)]="variant.variant"
+              [ngModelOptions]="{ standalone: true }"
+              name="variant{{ i }}"
+              class="w-full px-3 py-2 text-lg text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline"
+              placeholder="Enter answer"
+              required
+              #variantInput="ngModel"
+            />
+            <input
+              type="checkbox"
+              [(ngModel)]="variant.correct"
+              [ngModelOptions]="{ standalone: true }"
+              class="ml-2 h-6 w-6 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+            />
+            <span class="ml-1 text-sm text-gray-600">Correct</span>
+            <button
+              type="button"
+              class="ml-2 text-red-500 hover:text-red-700"
+              (click)="removeVariant(i)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div *ngIf="variantInput.invalid && variantInput.touched" class="text-red-500 text-sm mt-1">
+            Answer {{ variant.letter }} is required.
+          </div>
         </div>
       </div>
-    </div>
 
       <button
         type="button"
@@ -101,7 +97,7 @@
           class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-lg"
           [disabled]="quizForm.invalid"
         >
-          Create
+          {{ updateModeData ? 'Update' : 'Create' }}
         </button>
       </div>
     </form>

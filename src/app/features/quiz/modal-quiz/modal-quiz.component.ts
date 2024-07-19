@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { QuizService } from '../../../core/service/quiz.service';
-import { Variant } from '../../../interface/quiz.interface';
+import { Variant, Quiz } from '../../../interface/quiz.interface';
 
 @Component({
   selector: 'srp-modal-quiz',
@@ -14,10 +14,13 @@ import { Variant } from '../../../interface/quiz.interface';
 })
 export class ModalQuizComponent implements OnInit {
   @Output() closeModal: EventEmitter<void> = new EventEmitter<void>();
+  @Input() updateModeData: Quiz | null = null;
+
   categories$: Observable<any[]> | undefined;
-  newQuiz: { question: string; categoryId: string; variants: Variant[] } = {
+  newQuiz: Quiz = {
     question: '',
     categoryId: '',
+    multiple: false,
     variants: [
       { letter: 'A', variant: '', correct: false }
     ]
@@ -27,16 +30,24 @@ export class ModalQuizComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchCategories();
+    if (this.updateModeData) {
+      this.newQuiz = { ...this.updateModeData };
+    }
   }
 
-  async onCreateQuiz() {
+  async onSubmitQuiz() {
     if (this.newQuiz.question && this.newQuiz.categoryId && this.newQuiz.variants.every((v: Variant) => v.variant)) {
       try {
-        await this.quizService.addQuiz(this.newQuiz);
+        if (this.updateModeData) {
+          const updatedQuiz = { ...this.newQuiz, id: this.updateModeData.id };
+          await this.quizService.updateQuiz(updatedQuiz);
+        } else {
+          await this.quizService.addQuiz(this.newQuiz);
+        }
         this.closeModal.emit();
         this.resetForm();
       } catch (error) {
-        console.error('error:', error);
+        console.error('Error:', error);
       }
     }
   }
@@ -47,22 +58,23 @@ export class ModalQuizComponent implements OnInit {
   }
 
   addVariant() {
-    if (this.newQuiz.variants.length < 8) { 
+    if (this.newQuiz.variants.length < 8) {
       const lastVariant = this.newQuiz.variants[this.newQuiz.variants.length - 1];
-      const nextLetter = this.getNextLetter(lastVariant?.letter || 'A'); 
+      const nextLetter = this.getNextLetter(lastVariant?.letter || 'A');
       this.newQuiz.variants.push({ letter: nextLetter, variant: '', correct: false });
     }
   }
 
   removeVariant(index: number) {
     this.newQuiz.variants.splice(index, 1);
-    this.updateLetters(); 
+    this.updateLetters();
   }
 
   resetForm() {
     this.newQuiz = {
       question: '',
       categoryId: '',
+      multiple: false,
       variants: [
         { letter: 'A', variant: '', correct: false }
       ]
