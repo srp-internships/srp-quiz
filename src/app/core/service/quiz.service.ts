@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, collection, CollectionReference, query, where, addDoc, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collectionData, collection, CollectionReference, query, where, addDoc, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Quiz } from '../../interface/quiz.interface';
 
@@ -39,5 +39,10 @@ export class QuizService {
       categoryId: quizData.categoryId,
       variants: quizData.variants
     });
+  }
+
+  deleteQuiz(id: string): Promise<void> {
+    const quizDocRef = doc(this.firestore, `quizzes/${id}`);
+    return deleteDoc(quizDocRef);
   }
 }
