@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, collection, CollectionReference, query, where, addDoc, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collectionData, collection, CollectionReference, query, where, addDoc, doc, updateDoc, deleteDoc, setDoc , writeBatch } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { Quiz } from '../../interface/quiz.interface';
+import { Quiz, Variant } from '../../interface/quiz.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -17,18 +17,12 @@ export class QuizService {
     return collectionData(this.quizzesCollection, { idField: 'id' }) as Observable<Quiz[]>;
   }
 
-  getCategories(): Observable<any[]> {
-    const categoriesCollection = collection(this.firestore, 'categories');
-    const queryCategories = query(categoriesCollection, where('deleted', '==', false));
-    return collectionData(queryCategories, { idField: 'id' });
-  }
-
   getQuizzesByCategory(categoryId: string): Observable<Quiz[]> {
     const quizzesByCategoryQuery = query(this.quizzesCollection, where('categoryId', '==', categoryId));
     return collectionData(quizzesByCategoryQuery, { idField: 'id' }) as Observable<Quiz[]>;
   }
 
-  addQuiz(quizData: any): Promise<any> {
+  addQuiz(quizData: Quiz): Promise<any> {
     return addDoc(this.quizzesCollection, quizData);
   }
 
@@ -44,5 +38,17 @@ export class QuizService {
   deleteQuiz(id: string): Promise<void> {
     const quizDocRef = doc(this.firestore, `quizzes/${id}`);
     return deleteDoc(quizDocRef);
+  }
+
+  async addCorrects(quizId: string, correctVariants: Variant[]): Promise<void> {
+    for (let i = 0; i < correctVariants.length; i++) {
+      const variant = correctVariants[i];
+      const correctDocRef = doc(this.firestore, `corrects/${quizId}_${i}`);
+      await setDoc(correctDocRef, {
+        quizId: quizId,
+        letter: variant.letter,
+        variant: variant.variant
+      });
+    }
   }
 }

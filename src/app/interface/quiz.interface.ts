@@ -4,10 +4,12 @@ export interface Quiz {
   multiple: boolean;
   question: string;
   variants: Variant[];
+  correct?: boolean;
+
 }
 
 export interface Variant {
   letter: string;
   variant: string;
-  correct: boolean;
+  correct?: boolean;
 }

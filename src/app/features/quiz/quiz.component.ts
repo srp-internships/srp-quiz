@@ -1,6 +1,8 @@
+import { CategoryService } from '../../shared/services/category.service';
+import { Category } from '../../interface/category.interface';
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { QuizService } from '../../core/service/quiz.service';
+import { QuizService } from '../../shared/services/quiz.service';
 import { Quiz } from '../../interface/quiz.interface';
 import { ModalQuizComponent } from './modal-quiz/modal-quiz.component';
 import { CommonModule } from '@angular/common';
@@ -10,13 +12,13 @@ import { WarningComponent } from '../../shared/warning-component/warning-compone
 @Component({
   selector: 'srp-quiz',
   standalone: true,
-  imports: [ModalQuizComponent, CommonModule , WarningComponent],
+  imports: [ModalQuizComponent, CommonModule, WarningComponent],
   templateUrl: './quiz.component.html',
-  styleUrls: ['./quiz.component.scss']
+  styleUrls: ['./quiz.component.scss'],
 })
 export class QuizComponent implements OnInit {
-  categories$: Observable<any[]> | undefined;
-  quizzes: Quiz[] = [];
+  categories$: Observable<Category[]> | undefined;
+  quizzes$: Observable<Quiz[]> | undefined;
   selectedCategoryId: string | null = null;
   isModalOpen: boolean = false;
   quizToEdit: Quiz | null = null;
@@ -26,26 +28,24 @@ export class QuizComponent implements OnInit {
 
   constructor(
     private quizService: QuizService,
+    private categoryService: CategoryService,
     private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.categories$ = this.quizService.getCategories();
+    this.categories$ = this.categoryService.getCategories();
   }
 
   onCategoryChange(event: any): void {
     this.selectedCategoryId = event.target.value;
-    if (this.selectedCategoryId && this.selectedCategoryId !== 'Select category') {
-      this.fetchQuizzesByCategory(this.selectedCategoryId);
+    if (
+      this.selectedCategoryId &&
+      this.selectedCategoryId !== 'Select category'
+    ) {
+      this.quizzes$ = this.quizService.getQuizzesByCategory(this.selectedCategoryId);
     } else {
-      this.quizzes = [];
+      this.quizzes$ = new Observable<Quiz[]>();
     }
-  }
-
-  fetchQuizzesByCategory(categoryId: string): void {
-    this.quizService.getQuizzesByCategory(categoryId).subscribe(data => {
-      this.quizzes = data;
-    });
   }
 
   openModal(): void {
@@ -75,7 +75,7 @@ export class QuizComponent implements OnInit {
 
     try {
       await this.quizService.deleteQuiz(this.quizToDelete);
-      this.quizzes = this.quizzes.filter(quiz => quiz.id !== this.quizToDelete);
+      this.quizzes$ = this.quizService.getQuizzesByCategory(this.selectedCategoryId || '');
       this.toastr.success('Question successfully deleted.');
     } catch (error) {
       console.error('error:', error);
@@ -88,26 +88,27 @@ export class QuizComponent implements OnInit {
 
   handleDeleteConfirmation() {
     if (this.quizToDelete) {
-      this.quizService.deleteQuiz(this.quizToDelete).then(() => {
-        this.quizzes = this.quizzes.filter(quiz => quiz.id !== this.quizToDelete);
-        this.toastr.success('Question successfully deleted.');
-      }).catch(err => {
-        console.error('error:', err);
-        this.toastr.error('An error occurred while deleting a question.');
-      }).finally(() => {
-        this.showWarning = false;
-        this.quizToDelete = null;
-      });
+      this.quizService
+        .deleteQuiz(this.quizToDelete)
+        .then(() => {
+          this.quizzes$ = this.quizService.getQuizzesByCategory(this.selectedCategoryId || '');
+          this.toastr.success('Question successfully deleted.');
+        })
+        .catch((err) => {
+          console.error('error:', err);
+          this.toastr.error('An error occurred while deleting a question.');
+        })
+        .finally(() => {
+          this.showWarning = false;
+          this.quizToDelete = null;
+        });
     }
   }
 
-  handleDeleteCancellation() {
+   closeModal(): void {
     this.showWarning = false;
-    this.quizToDelete = null;
-  }
-
-  closeModal(): void {
     this.isModalOpen = false;
+    this.quizToDelete = null;
     this.quizToEdit = null;
   }
 }
