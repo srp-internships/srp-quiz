@@ -3,7 +3,7 @@
     <h2 class="text-xl font-medium mb-4">{{ updateModeData ? 'Edit Quiz Question' : 'Create new question' }}</h2>
     <form [formGroup]="quizForm" (ngSubmit)="onSubmitQuiz()">
       <div class="mb-4">
-        <label for="question" class="mb-2 text-sm font-medium">Question :</label>
+        <label for="question" class="mb-2 text-sm font-medium">Question<span class="text-red-500 text-xl">*</span> :</label>
         <input
           type="text"
           id="question"
@@ -16,7 +16,7 @@
       </div>
 
       <div class="mb-4">
-        <label for="category" class="text-sm mb-2 font-medium">Category:</label>
+        <label for="category" class="text-sm mb-2 font-medium">Category<span class="text-red-500 text-xl">*</span>:</label>
         <select
           id="category"
           formControlName="categoryId"
@@ -33,7 +33,7 @@
       </div>
 
       <div>
-        <label class="text-sm font-medium mb-4">Variants</label>
+        <label class="text-sm font-medium mb-4">Variants<span class="text-red-500 text-xl">*</span></label>
         <div formArrayName="variants">
           <div *ngFor="let variant of variants.controls; let i = index" [formGroupName]="i" class="mb-4">
             <div class="flex items-center mb-2">
@@ -83,7 +83,6 @@
         <button
           type="submit"
           class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-lg"
-          [disabled]="quizForm.invalid"
         >
           {{ updateModeData ? 'Update' : 'Create' }}
         </button>

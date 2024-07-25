@@ -4,9 +4,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { Category } from '../../interface/category.interface';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
-  selector: 'srp-category.component',
+  selector: 'srp-category',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './category.component.html',
@@ -17,7 +18,7 @@ export class CategoryComponent implements OnInit {
   currentCategory: Category = { id: '', name: '' };
   error: string | null = null;
 
-  constructor(private categoryService: CategoryService) {}
+  constructor(private categoryService: CategoryService , private toast: ToastrService) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -30,6 +31,12 @@ export class CategoryComponent implements OnInit {
   async saveCategory(): Promise<void> {
     if (this.currentCategory.name.trim() !== '') {
       try {
+        const isDuplicate = await this.categoryService.checkDuplicateCategory(this.currentCategory.name, this.currentCategory.id);
+        if (isDuplicate) {
+          this.toast.error('Category already exists.');
+          return;
+        }
+
         if (this.currentCategory.id === '') {
           await this.categoryService.addCategory(this.currentCategory.name);
         } else {
@@ -41,6 +48,7 @@ export class CategoryComponent implements OnInit {
 
         this.currentCategory = { id: '', name: '' };
         this.error = null;
+        this.loadCategories();
       } catch (error) {
         console.error('error: ', error);
       }

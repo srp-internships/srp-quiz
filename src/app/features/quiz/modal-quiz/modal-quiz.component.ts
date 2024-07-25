@@ -10,9 +10,9 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'srp-modal-quiz',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],  // Убедитесь, что FormsModule не используется
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './modal-quiz.component.html',
-  styleUrls: ['./modal-quiz.component.scss'],
+  styleUrl: './modal-quiz.component.scss',
 })
 export class ModalQuizComponent implements OnInit {
   @Output() closeModal: EventEmitter<void> = new EventEmitter<void>();
@@ -20,6 +20,7 @@ export class ModalQuizComponent implements OnInit {
 
   categories$: Observable<any[]> | undefined;
   quizForm: FormGroup;
+  submitting: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -31,9 +32,7 @@ export class ModalQuizComponent implements OnInit {
       question: ['', Validators.required],
       categoryId: ['', Validators.required],
       multiple: [false],
-      variants: this.fb.array([
-        this.createVariant()
-      ])
+      variants: this.fb.array([this.createVariant()], Validators.required)
     });
   }
 
@@ -41,6 +40,8 @@ export class ModalQuizComponent implements OnInit {
     this.fetchCategories();
     if (this.updateModeData) {
       this.updateForm(this.updateModeData);
+    } else {
+      this.setDefaultCategory();
     }
   }
 
@@ -59,7 +60,7 @@ export class ModalQuizComponent implements OnInit {
   addVariant(): void {
     if (this.variants.length < 8) {
       const lastVariant = this.variants.at(this.variants.length - 1);
-      const nextLetter = this.getNextLetter(lastVariant.get('letter')?.value || 'A');
+      const nextLetter = lastVariant ? this.getNextLetter(lastVariant.get('letter')?.value || 'A') : 'A';
       this.variants.push(this.fb.group({
         letter: [nextLetter],
         variant: ['', Validators.required],
@@ -82,6 +83,14 @@ export class ModalQuizComponent implements OnInit {
     this.categories$ = this.categoryService.getCategories();
   }
 
+  setDefaultCategory(): void {
+    this.categories$!.subscribe(categories => {
+      if (categories.length > 0) {
+        this.quizForm.patchValue({ categoryId: categories[0].id });
+      }
+    });
+  }
+
   getNextLetter(currentLetter: string): string {
     const currentCharCode = currentLetter.charCodeAt(0);
     const nextCharCode = currentCharCode + 1;
@@ -95,15 +104,33 @@ export class ModalQuizComponent implements OnInit {
   }
 
   async onSubmitQuiz(): Promise<void> {
-    if (this.quizForm.valid) {
+    if (this.quizForm.valid && this.variants.length > 0) {
+      this.submitting = true;
       const formValue = this.quizForm.value;
+      const question = formValue.question;
+  
+      try {
+        const excludeId = this.updateModeData ? this.updateModeData.id : undefined;
+        const isDuplicate = await this.checkDuplicateQuestion(question, excludeId);
+        if (isDuplicate) {
+          this.toast.error('This question already exists.');
+          this.submitting = false;
+          return;
+        }
+      } catch (error) {
+        this.toast.error('Error checking for duplicate question.');
+        console.error('Error checking for duplicates:', error);
+        this.submitting = false;
+        return;
+      }
+  
       const quizData: Quiz = {
         question: formValue.question,
         categoryId: formValue.categoryId,
         multiple: formValue.multiple,
         variants: formValue.variants
       };
-
+  
       try {
         if (this.updateModeData) {
           const updatedQuiz = { ...quizData, id: this.updateModeData.id };
@@ -112,23 +139,27 @@ export class ModalQuizComponent implements OnInit {
         } else {
           const quizDocRef = await this.quizService.addQuiz(quizData);
           const quizId = quizDocRef.id;
-
+  
           await this.quizService.addCorrects(
             quizId,
             quizData.variants.filter((v: Variant) => v.correct)
           );
           this.toast.success('Question successfully created');
         }
-
+  
         this.closeModal.emit();
         this.resetForm();
       } catch (error) {
         console.error('Error:', error);
         this.toast.error('An error occurred while processing the quiz.');
+      } finally {
+        this.submitting = false;
       }
+    } else {
+      this.toast.error('Please fill out all required fields.');
     }
   }
-
+  
   onCloseModal(): void {
     this.closeModal.emit();
     this.resetForm();
@@ -140,8 +171,22 @@ export class ModalQuizComponent implements OnInit {
       categoryId: quiz.categoryId,
       multiple: quiz.multiple
     });
-    
+
     const variantsFormArray = this.fb.array(quiz.variants.map(variant => this.fb.group(variant)));
     this.quizForm.setControl('variants', variantsFormArray);
+  }
+
+  private async checkDuplicateQuestion(question: string, excludeId?: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      this.quizService.getQuizzes().subscribe({
+        next: quizzes => {
+          const isDuplicate = quizzes.some(quiz => quiz.question === question && quiz.id !== excludeId);
+          resolve(isDuplicate);
+        },
+        error: error => {
+          reject(error);
+        }
+      });
+    });
   }
 }
