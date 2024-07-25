@@ -118,8 +118,6 @@ export class ModalQuizComponent implements OnInit {
           return;
         }
       } catch (error) {
-        this.toast.error('Error checking for duplicate question.');
-        console.error('Error checking for duplicates:', error);
         this.submitting = false;
         return;
       }
@@ -151,7 +149,6 @@ export class ModalQuizComponent implements OnInit {
         this.resetForm();
       } catch (error) {
         console.error('Error:', error);
-        this.toast.error('An error occurred while processing the quiz.');
       } finally {
         this.submitting = false;
       }
