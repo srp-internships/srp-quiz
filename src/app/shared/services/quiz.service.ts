@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collectionData, collection, CollectionReference, query, where, addDoc, doc, updateDoc, deleteDoc, setDoc , writeBatch } from '@angular/fire/firestore';
+import { Firestore, collectionData, collection, CollectionReference, DocumentData, query, where, addDoc, doc, updateDoc, deleteDoc, writeBatch } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { Quiz, Variant } from '../../interface/quiz.interface';
 
 @Injectable({
@@ -8,9 +9,11 @@ import { Quiz, Variant } from '../../interface/quiz.interface';
 })
 export class QuizService {
   private quizzesCollection: CollectionReference<Quiz>;
+  private correctsCollection: CollectionReference<DocumentData>;
 
   constructor(private firestore: Firestore) {
     this.quizzesCollection = collection(this.firestore, 'quizzes') as CollectionReference<Quiz>;
+    this.correctsCollection = collection(this.firestore, 'corrects');
   }
 
   getQuizzes(): Observable<Quiz[]> {
@@ -23,7 +26,10 @@ export class QuizService {
   }
 
   addQuiz(quizData: Quiz): Promise<any> {
-    return addDoc(this.quizzesCollection, quizData);
+    return addDoc(this.quizzesCollection, quizData).then(async (quizDocRef) => {
+      const quizId = quizDocRef.id;
+      await this.addCorrects(quizId, quizData.variants.filter((v: Variant) => v.correct));
+    });
   }
 
   updateQuiz(quizData: Quiz): Promise<void> {
@@ -32,6 +38,8 @@ export class QuizService {
       question: quizData.question,
       categoryId: quizData.categoryId,
       variants: quizData.variants
+    }).then(async () => {
+      await this.addCorrects(quizData.id!, quizData.variants.filter((v: Variant) => v.correct));
     });
   }
 
@@ -41,14 +49,17 @@ export class QuizService {
   }
 
   async addCorrects(quizId: string, correctVariants: Variant[]): Promise<void> {
-    for (let i = 0; i < correctVariants.length; i++) {
-      const variant = correctVariants[i];
-      const correctDocRef = doc(this.firestore, `corrects/${quizId}_${i}`);
-      await setDoc(correctDocRef, {
-        quizId: quizId,
-        letter: variant.letter,
-        variant: variant.variant
-      });
-    }
+    const batch = writeBatch(this.firestore);
+    correctVariants.forEach(variant => {
+      const correctDocRef = doc(this.correctsCollection, `${quizId}-${variant.letter}`);
+      batch.set(correctDocRef, variant);
+    });
+    return batch.commit();
+  }
+
+  async isDuplicateQuestion(question: string, excludeId?: string): Promise<boolean> {
+    const quizzes = await firstValueFrom(this.getQuizzes());
+    if (!quizzes) return false;
+    return quizzes.some(quiz => quiz.question === question && quiz.id !== excludeId);
   }
 }

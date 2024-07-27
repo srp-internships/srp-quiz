@@ -105,13 +105,21 @@ export class ModalQuizComponent implements OnInit {
 
   async onSubmitQuiz(): Promise<void> {
     if (this.quizForm.valid && this.variants.length > 0) {
+      const variants = this.quizForm.get('variants')?.value;
+      const hasCheckedVariant = variants.some((variant: any) => variant.correct);
+  
+      if (!hasCheckedVariant) {
+        this.toast.error('Please select at least one correct variant.');
+        return;
+      }
+  
       this.submitting = true;
       const formValue = this.quizForm.value;
       const question = formValue.question;
   
       try {
         const excludeId = this.updateModeData ? this.updateModeData.id : undefined;
-        const isDuplicate = await this.checkDuplicateQuestion(question, excludeId);
+        const isDuplicate = await this.quizService.isDuplicateQuestion(question, excludeId);
         if (isDuplicate) {
           this.toast.error('This question already exists.');
           this.submitting = false;
@@ -135,13 +143,7 @@ export class ModalQuizComponent implements OnInit {
           await this.quizService.updateQuiz(updatedQuiz);
           this.toast.success('Question successfully edited');
         } else {
-          const quizDocRef = await this.quizService.addQuiz(quizData);
-          const quizId = quizDocRef.id;
-  
-          await this.quizService.addCorrects(
-            quizId,
-            quizData.variants.filter((v: Variant) => v.correct)
-          );
+          await this.quizService.addQuiz(quizData);
           this.toast.success('Question successfully created');
         }
   
@@ -171,19 +173,5 @@ export class ModalQuizComponent implements OnInit {
 
     const variantsFormArray = this.fb.array(quiz.variants.map(variant => this.fb.group(variant)));
     this.quizForm.setControl('variants', variantsFormArray);
-  }
-
-  private async checkDuplicateQuestion(question: string, excludeId?: string): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      this.quizService.getQuizzes().subscribe({
-        next: quizzes => {
-          const isDuplicate = quizzes.some(quiz => quiz.question === question && quiz.id !== excludeId);
-          resolve(isDuplicate);
-        },
-        error: error => {
-          reject(error);
-        }
-      });
-    });
   }
 }
