@@ -1,0 +1,41 @@
+<div class="container mx-auto w-full my-10 p-8 bg-white rounded-lg shadow-md">
+  <div *ngIf="quizzes.length > 0">
+    <h2 class="text-2xl font-bold mb-4">{{ quizzes[currentQuizIndex].question }}</h2>
+    <div *ngIf="quizzes[currentQuizIndex].multiple">
+
+      <div class="space-y-2">
+        <div *ngFor="let variant of quizzes[currentQuizIndex].variants" class="flex items-center p-4 border border-gray-300 bg-white hover:bg-gray-100  rounded-lg ">
+          <input
+            type="checkbox"
+            [checked]="isSelected(variant)"
+            (change)="selectAnswer(variant)"
+            class="h-6 w-6 text-blue-600 mr-4"
+          />
+          <span class="text-lg">{{ variant.letter }}. {{ variant.variant }}</span>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!quizzes[currentQuizIndex].multiple">
+
+      <div class="space-y-2">
+        <button
+          *ngFor="let variant of quizzes[currentQuizIndex].variants"
+          (click)="selectAnswer(variant)"
+          [ngClass]="{'bg-blue-500 text-black': isSelected(variant)}"
+          class="w-full text-left px-4 py-4 rounded-lg border border-gray-300 bg-white hover:bg-gray-100 "
+        >
+          {{ variant.letter }}. {{ variant.variant }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="quizzes.length === 0">
+    <p>Loading...</p>
+  </div>
+  <button
+    (click)="answerQuiz()"
+    class="bg-blue-500 text-white hover:bg-blue-600 mt-3 font-medium px-4 py-2 rounded-lg"
+  >
+    Submit Answer
+  </button>
+</div>

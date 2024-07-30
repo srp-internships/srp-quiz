@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { CategoryComponent } from './features/category/category.component';
 import { QuizComponent } from './features/quiz/quiz.component';
 import { authGuard } from './core/guard/auth.guard';
+import { StudentComponent } from './features/student/student.component';
+import { QuestionsComponent } from './features/questions/questions.component';
 
 export const routes: Routes = [
   {
@@ -15,5 +17,7 @@ export const routes: Routes = [
 
   { path: 'category', component: CategoryComponent , canActivate: [authGuard] },
   { path: 'quiz', component: QuizComponent , canActivate: [authGuard] },
+  { path: 'student', component: StudentComponent , canActivate: [authGuard] },
+  { path: 'question/:categoryId', component: QuestionsComponent , canActivate: [authGuard] },
   { path: '**', redirectTo: '/login' },
 ];

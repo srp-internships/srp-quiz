@@ -34,6 +34,8 @@ export class ModalQuizComponent implements OnInit {
       multiple: [false],
       variants: this.fb.array([this.createVariant()], Validators.required)
     });
+
+    this.trackVariantsChanges();
   }
 
   ngOnInit(): void {
@@ -72,6 +74,7 @@ export class ModalQuizComponent implements OnInit {
   removeVariant(index: number): void {
     this.variants.removeAt(index);
     this.updateLetters();
+    this.trackVariantsChanges();
   }
 
   resetForm(): void {
@@ -103,20 +106,27 @@ export class ModalQuizComponent implements OnInit {
     });
   }
 
+  trackVariantsChanges(): void {
+    this.variants.valueChanges.subscribe(() => {
+      const selectedCount = this.variants.controls.filter(control => control.get('correct')?.value).length;
+      this.quizForm.get('multiple')?.setValue(selectedCount > 1);
+    });
+  }
+
   async onSubmitQuiz(): Promise<void> {
     if (this.quizForm.valid && this.variants.length > 0) {
       const variants = this.quizForm.get('variants')?.value;
       const hasCheckedVariant = variants.some((variant: any) => variant.correct);
-  
+
       if (!hasCheckedVariant) {
         this.toast.error('Please select at least one correct variant.');
         return;
       }
-  
+
       this.submitting = true;
       const formValue = this.quizForm.value;
       const question = formValue.question;
-  
+
       try {
         const excludeId = this.updateModeData ? this.updateModeData.id : undefined;
         const isDuplicate = await this.quizService.isDuplicateQuestion(question, excludeId);
@@ -129,14 +139,14 @@ export class ModalQuizComponent implements OnInit {
         this.submitting = false;
         return;
       }
-  
+
       const quizData: Quiz = {
         question: formValue.question,
         categoryId: formValue.categoryId,
         multiple: formValue.multiple,
         variants: formValue.variants
       };
-  
+
       try {
         if (this.updateModeData) {
           const updatedQuiz = { ...quizData, id: this.updateModeData.id };
@@ -146,7 +156,7 @@ export class ModalQuizComponent implements OnInit {
           await this.quizService.addQuiz(quizData);
           this.toast.success('Question successfully created');
         }
-  
+
         this.closeModal.emit();
         this.resetForm();
       } catch (error) {
@@ -173,5 +183,6 @@ export class ModalQuizComponent implements OnInit {
 
     const variantsFormArray = this.fb.array(quiz.variants.map(variant => this.fb.group(variant)));
     this.quizForm.setControl('variants', variantsFormArray);
+    this.trackVariantsChanges(); 
   }
 }
