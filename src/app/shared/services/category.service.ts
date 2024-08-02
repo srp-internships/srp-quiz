@@ -28,4 +28,18 @@ export class CategoryService {
     const categoryDoc = doc(this.firestore, `categories/${id}`);
     return updateDoc(categoryDoc, { deleted: true });
   }
+
+  async checkDuplicateCategory(name: string, excludeId?: string): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      this.getCategories().subscribe({
+        next: categories => {
+          const isDuplicate = categories.some(category => category.name === name && category.id !== excludeId);
+          resolve(isDuplicate);
+        },
+        error: error => {
+          reject(error);
+        }
+      });
+    });
+  }
 }
