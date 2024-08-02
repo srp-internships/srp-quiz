@@ -4,6 +4,7 @@ import { QuizComponent } from './features/quiz/quiz.component';
 import { authGuard } from './core/guard/auth.guard';
 import { StudentComponent } from './features/student/student.component';
 import { QuestionsComponent } from './features/questions/questions.component';
+import { RatingComponent } from './features/rating/rating.component';
 
 export const routes: Routes = [
   {
@@ -14,10 +15,10 @@ export const routes: Routes = [
         (c) => c.LoginPageComponent
       ),
   },
-
   { path: 'category', component: CategoryComponent , canActivate: [authGuard] },
   { path: 'quiz', component: QuizComponent , canActivate: [authGuard] },
   { path: 'student', component: StudentComponent , canActivate: [authGuard] },
   { path: 'question/:categoryId', component: QuestionsComponent , canActivate: [authGuard] },
+  { path: 'rating', component: RatingComponent, canActivate: [authGuard] }, 
   { path: '**', redirectTo: '/login' },
 ];
