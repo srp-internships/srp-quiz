@@ -17,8 +17,8 @@ export const routes: Routes = [
   },
   { path: 'category', component: CategoryComponent , canActivate: [authGuard] },
   { path: 'quiz', component: QuizComponent , canActivate: [authGuard] },
-  { path: 'student', component: StudentComponent , canActivate: [authGuard] },
-  { path: 'question/:categoryId', component: QuestionsComponent , canActivate: [authGuard] },
-  { path: 'rating/:categoryId', component: RatingComponent, canActivate: [authGuard] }, 
-  { path: '**', redirectTo: '/login' },
-];
+  { path: 'student', component: StudentComponent  },
+  { path: 'question/:categoryId', component: QuestionsComponent  },
+  { path: 'rating/:categoryId', component: RatingComponent }, 
+  { path: '', redirectTo: '/student', pathMatch: 'full' },
+]
