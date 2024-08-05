@@ -37,6 +37,7 @@ export class QuizService {
     return updateDoc(quizDocRef, {
       question: quizData.question,
       categoryId: quizData.categoryId,
+      multiple: quizData.multiple,
       variants: quizData.variants
     }).then(async () => {
       await this.addCorrects(quizData.id!, quizData.variants.filter((v: Variant) => v.correct));
