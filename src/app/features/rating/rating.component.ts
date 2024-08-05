@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Quiz , Variant } from '../../interface/quiz.interface';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'srp-rating',
@@ -10,16 +11,45 @@ import { RouterModule } from '@angular/router';
   templateUrl: './rating.component.html',
   styleUrls: ['./rating.component.scss']
 })
-export class RatingComponent implements OnInit {
-  correctAnswers: number = 0;
-  totalQuestions: number = 0;
 
-  constructor(private route: ActivatedRoute) {}
+export class RatingComponent implements OnInit {
+  correctAnswersCount: number = 0;
+  totalQuestions: number = 0;
+  incorrectAnswersCount: number = 0;
+  completedTests: { categoryId: string,
+  results: { 
+    quiz: Quiz, 
+    selectedAnswers: string[], 
+    correctVariants: string[], 
+    isCorrect: boolean }[] }[] = [];
+
+  currentCategoryTests: {
+    quiz: Quiz, 
+    selectedAnswers: string[], 
+    correctVariants: string[], 
+    isCorrect: boolean }[] = [];  
+
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      this.correctAnswers = +params['correct'];
-      this.totalQuestions = +params['total'];
+      this.correctAnswersCount = +params['correct'] || 0;
+      this.totalQuestions = +params['total'] || 0;
+      this.incorrectAnswersCount = this.totalQuestions - this.correctAnswersCount;
     });
+
+    const savedTests = sessionStorage.getItem('completedTests');
+    if (savedTests) {
+      this.completedTests = JSON.parse(savedTests);
+      const categoryId = this.route.snapshot.paramMap.get('categoryId');
+      if (categoryId) {
+        this.currentCategoryTests = this.completedTests.find(test => test.categoryId === categoryId)?.results || [];
+      }
+    }
+  }
+
+  clearSessionStorageAndNavigate(): void {
+    sessionStorage.removeItem('completedTests');
+    this.router.navigate(['/student']);
   }
 }

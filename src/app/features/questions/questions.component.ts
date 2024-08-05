@@ -20,6 +20,7 @@ export class QuestionsComponent implements OnInit {
   isLastQuestion: boolean = false;
   correctAnswersCount: number = 0;
   errorMessage: string | null = null;
+  completedTests: { categoryId: string, results: { quiz: Quiz, selectedAnswers: string[], correctVariants: string[], isCorrect: boolean }[] }[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -32,7 +33,7 @@ export class QuestionsComponent implements OnInit {
     const categoryId = this.route.snapshot.paramMap.get('categoryId');
     if (categoryId) {
       this.quizService.getQuizzesByCategory(categoryId).subscribe((quizzes) => {
-        this.quizzes = quizzes;
+        this.quizzes = this.shuffleArray(quizzes);
         this.checkIfLastQuestion();
       });
     }
@@ -73,7 +74,9 @@ export class QuestionsComponent implements OnInit {
 
         this.checkIfLastQuestion();
       } else {
-        this.router.navigate(['/rating'], {
+        this.saveCompletedTest();
+        const categoryId = this.route.snapshot.paramMap.get('categoryId');
+        this.router.navigate(['/rating', categoryId], {
           queryParams: {
             correct: this.correctAnswersCount,
             total: this.quizzes.length
@@ -108,5 +111,30 @@ export class QuestionsComponent implements OnInit {
     if (isCorrect) {
       this.correctAnswersCount++;
     }
+
+    this.saveQuizResult(currentQuiz, Array.from(selectedAnswers), Array.from(correctAnswers), isCorrect);
+  }
+
+  private saveQuizResult(quiz: Quiz, selectedAnswers: string[], correctVariants: string[], isCorrect: boolean): void {
+    const categoryId = this.route.snapshot.paramMap.get('categoryId');
+    if (categoryId) {
+      const existingTest = this.completedTests.find(test => test.categoryId === categoryId);
+      if (existingTest) {
+        existingTest.results.push({ quiz, selectedAnswers, correctVariants, isCorrect });
+      } else {
+        this.completedTests.push({
+          categoryId: categoryId,
+          results: [{ quiz, selectedAnswers, correctVariants, isCorrect }]
+        });
+      }
+    }
+  }
+
+  private saveCompletedTest(): void {
+    sessionStorage.setItem('completedTests', JSON.stringify(this.completedTests));
+  }
+
+  private shuffleArray(array: Quiz[]): Quiz[] {
+    return array.sort(() => Math.random() - 0.5);
   }
 }
