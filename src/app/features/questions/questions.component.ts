@@ -55,37 +55,36 @@ export class QuestionsComponent implements OnInit {
   }
 
   submitOrNext(): void {
-    if (!this.showResult) {
-      const anyAnswerSelected = Object.values(this.selectedAnswers).includes(true);
-
-      if (!anyAnswerSelected) {
-        this.toast.error('Please select at least one answer.');
-        return;
-      }
-
-      this.showResult = true;
-      this.calculateCorrectAnswers();
+    const anyAnswerSelected = Object.values(this.selectedAnswers).includes(true);
+  
+    if (!anyAnswerSelected) {
+      this.toast.error('Please select at least one answer.');
+      this.showResult = false;
+      return;
+    }
+  
+    this.showResult = true;
+    this.calculateCorrectAnswers();
+  
+    if (this.currentQuizIndex < this.quizzes.length - 1) {
+      this.currentQuizIndex++;
+      this.selectedAnswers = {};
+      this.showResult = false;
+      this.errorMessage = null;
+  
+      this.checkIfLastQuestion();
     } else {
-      if (this.currentQuizIndex < this.quizzes.length - 1) {
-        this.currentQuizIndex++;
-        this.selectedAnswers = {};
-        this.showResult = false;
-        this.errorMessage = null;
-
-        this.checkIfLastQuestion();
-      } else {
-        this.saveCompletedTest();
-        const categoryId = this.route.snapshot.paramMap.get('categoryId');
-        this.router.navigate(['/rating', categoryId], {
-          queryParams: {
-            correct: this.correctAnswersCount,
-            total: this.quizzes.length
-          }
-        });
-      }
+      this.saveCompletedTest();
+      const categoryId = this.route.snapshot.paramMap.get('categoryId');
+      this.router.navigate(['/rating', categoryId], {
+        queryParams: {
+          correct: this.correctAnswersCount,
+          total: this.quizzes.length
+        }
+      });
     }
   }
-
+  
   private checkIfLastQuestion(): void {
     this.isLastQuestion = this.currentQuizIndex === this.quizzes.length - 1;
   }
