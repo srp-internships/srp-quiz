@@ -8,6 +8,7 @@ import { ModalQuizComponent } from './modal-quiz/modal-quiz.component';
 import { CommonModule } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
 import { WarningComponent } from '../../shared/warning-component/warning-component.component';
+import { CorrectsService } from '../../shared/services/corrects.service';
 
 @Component({
   selector: 'srp-quiz',
@@ -28,6 +29,7 @@ export class QuizComponent implements OnInit {
 
   constructor(
     private quizService: QuizService,
+    private correct: CorrectsService,
     private categoryService: CategoryService,
     private toastr: ToastrService
   ) {}

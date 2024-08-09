@@ -12,14 +12,14 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent implements OnInit {
   title = 'srp-quiz';
-  showNavbar: boolean = true;
+  showNavbar: boolean = false;
 
   constructor(private router: Router) {}
 
   ngOnInit() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showNavbar = !this.router.url.includes('/login');
+        this.showNavbar = ['/category', '/quiz'].some(path => this.router.url.startsWith(path));
       }
     });
   }
