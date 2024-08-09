@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators , ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { QuizService } from '../../../shared/services/quiz.service';
 import { CategoryService } from '../../../shared/services/category.service';
@@ -144,7 +144,10 @@ export class ModalQuizComponent implements OnInit {
         question: formValue.question,
         categoryId: formValue.categoryId,
         multiple: formValue.multiple,
-        variants: formValue.variants
+        variants: formValue.variants.map((v: Variant) => ({
+          letter: v.letter,
+          variant: v.variant
+        }))
       };
 
       try {
@@ -153,7 +156,11 @@ export class ModalQuizComponent implements OnInit {
           await this.quizService.updateQuiz(updatedQuiz);
           this.toast.success('Question successfully edited');
         } else {
-          await this.quizService.addQuiz(quizData);
+          const quizId = await this.quizService.addQuiz(quizData);
+          
+          const correctVariants = formValue.variants.filter((v: Variant) => v.correct);
+          await this.quizService.addCorrects(quizId, correctVariants);
+          
           this.toast.success('Question successfully created');
         }
 

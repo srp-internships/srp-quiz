@@ -13,3 +13,9 @@ export interface Variant {
   variant: string;
   correct?: boolean;
 }
+
+export interface CorrectAnswer {
+  letter: string;
+  variant: string;
+  correct: boolean;
+}
