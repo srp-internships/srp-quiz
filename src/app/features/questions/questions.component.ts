@@ -98,7 +98,7 @@ export class QuestionsComponent implements OnInit {
     );
     const correctAnswers = new Set<string>(
       currentQuiz.variants
-        .filter((variant) => variant.correct)
+        // .filter((variant) => variant.correct)
         .map((variant) => variant.letter)
     );
 
