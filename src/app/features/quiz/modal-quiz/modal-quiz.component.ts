@@ -1,11 +1,23 @@
 import { Component, EventEmitter, OnInit, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Observable } from 'rxjs';
 import { QuizService } from '../../../shared/services/quiz.service';
 import { CategoryService } from '../../../shared/services/category.service';
-import { Variant, Quiz } from '../../../interface/quiz.interface';
+import {
+  Variant,
+  Quiz,
+  SelectedVariant,
+  QuizCorrect,
+} from '../../../interface/quiz.interface';
 import { ToastrService } from 'ngx-toastr';
+import { CorrectsService } from '../../../shared/services/corrects.service';
 
 @Component({
   selector: 'srp-modal-quiz',
@@ -25,6 +37,7 @@ export class ModalQuizComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private quizService: QuizService,
+    private correctsService: CorrectsService,
     private toast: ToastrService,
     private categoryService: CategoryService
   ) {
@@ -32,7 +45,7 @@ export class ModalQuizComponent implements OnInit {
       question: ['', Validators.required],
       categoryId: ['', Validators.required],
       multiple: [false],
-      variants: this.fb.array([this.createVariant()], Validators.required)
+      variants: this.fb.array([this.createVariant()], Validators.required),
     });
 
     this.trackVariantsChanges();
@@ -55,19 +68,23 @@ export class ModalQuizComponent implements OnInit {
     return this.fb.group({
       letter: ['A'],
       variant: ['', Validators.required],
-      correct: [false]
+      correct: [false],
     });
   }
 
   addVariant(): void {
     if (this.variants.length < 8) {
       const lastVariant = this.variants.at(this.variants.length - 1);
-      const nextLetter = lastVariant ? this.getNextLetter(lastVariant.get('letter')?.value || 'A') : 'A';
-      this.variants.push(this.fb.group({
-        letter: [nextLetter],
-        variant: ['', Validators.required],
-        correct: [false]
-      }));
+      const nextLetter = lastVariant
+        ? this.getNextLetter(lastVariant.get('letter')?.value || 'A')
+        : 'A';
+      this.variants.push(
+        this.fb.group({
+          letter: [nextLetter],
+          variant: ['', Validators.required],
+          correct: [false],
+        })
+      );
     }
   }
 
@@ -87,7 +104,7 @@ export class ModalQuizComponent implements OnInit {
   }
 
   setDefaultCategory(): void {
-    this.categories$!.subscribe(categories => {
+    this.categories$!.subscribe((categories) => {
       if (categories.length > 0) {
         this.quizForm.patchValue({ categoryId: categories[0].id });
       }
@@ -108,7 +125,9 @@ export class ModalQuizComponent implements OnInit {
 
   trackVariantsChanges(): void {
     this.variants.valueChanges.subscribe(() => {
-      const selectedCount = this.variants.controls.filter(control => control.get('correct')?.value).length;
+      const selectedCount = this.variants.controls.filter(
+        (control) => control.get('correct')?.value
+      ).length;
       this.quizForm.get('multiple')?.setValue(selectedCount > 1);
     });
   }
@@ -116,7 +135,9 @@ export class ModalQuizComponent implements OnInit {
   async onSubmitQuiz(): Promise<void> {
     if (this.quizForm.valid && this.variants.length > 0) {
       const variants = this.quizForm.get('variants')?.value;
-      const hasCheckedVariant = variants.some((variant: any) => variant.correct);
+      const hasCheckedVariant = variants.some(
+        (variant: any) => variant.correct
+      );
 
       if (!hasCheckedVariant) {
         this.toast.error('Please select at least one correct variant.');
@@ -128,8 +149,13 @@ export class ModalQuizComponent implements OnInit {
       const question = formValue.question;
 
       try {
-        const excludeId = this.updateModeData ? this.updateModeData.id : undefined;
-        const isDuplicate = await this.quizService.isDuplicateQuestion(question, excludeId);
+        const excludeId = this.updateModeData
+          ? this.updateModeData.id
+          : undefined;
+        const isDuplicate = await this.quizService.isDuplicateQuestion(
+          question,
+          excludeId
+        );
         if (isDuplicate) {
           this.toast.error('This question already exists.');
           this.submitting = false;
@@ -144,10 +170,10 @@ export class ModalQuizComponent implements OnInit {
         question: formValue.question,
         categoryId: formValue.categoryId,
         multiple: formValue.multiple,
-        variants: formValue.variants.map((v: Variant) => ({
+        variants: formValue.variants.map((v: SelectedVariant) => ({
           letter: v.letter,
-          variant: v.variant
-        }))
+          variant: v.variant,
+        })),
       };
 
       try {
@@ -157,10 +183,15 @@ export class ModalQuizComponent implements OnInit {
           this.toast.success('Question successfully edited');
         } else {
           const quizId = await this.quizService.addQuiz(quizData);
-          
-          const correctVariants = formValue.variants.filter((v: Variant) => v.correct);
-          await this.quizService.addCorrects(quizId, correctVariants);
-          
+
+          const correctVariants: string[] = formValue.variants
+            .filter((v: SelectedVariant) => v.correct)
+            .map((v: SelectedVariant) => v.letter);
+
+          await this.correctsService.addCorrects(quizId, {
+            corrects: correctVariants,
+          });
+
           this.toast.success('Question successfully created');
         }
 
@@ -175,7 +206,7 @@ export class ModalQuizComponent implements OnInit {
       this.toast.error('Please fill out all required fields.');
     }
   }
-  
+
   onCloseModal(): void {
     this.closeModal.emit();
     this.resetForm();
@@ -185,11 +216,13 @@ export class ModalQuizComponent implements OnInit {
     this.quizForm.patchValue({
       question: quiz.question,
       categoryId: quiz.categoryId,
-      multiple: quiz.multiple
+      multiple: quiz.multiple,
     });
 
-    const variantsFormArray = this.fb.array(quiz.variants.map(variant => this.fb.group(variant)));
+    const variantsFormArray = this.fb.array(
+      quiz.variants.map((variant) => this.fb.group(variant))
+    );
     this.quizForm.setControl('variants', variantsFormArray);
-    this.trackVariantsChanges(); 
+    this.trackVariantsChanges();
   }
 }
