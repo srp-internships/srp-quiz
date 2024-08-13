@@ -18,9 +18,9 @@
       <div *ngFor="let quiz of quizzes" class="bg-white rounded-lg mb-3 shadow-md p-4">
         <h3 class="font-medium text-lg mb-2">{{ quiz.question }}</h3>
         <ul class="list-disc list-inside mb-2">
-          <!-- <li *ngFor="let variant of quiz.variants" [ngClass]="{'font-bold': variant.correct, 'text-green-500': variant.correct}">
+          <li *ngFor="let variant of quiz.variants" [ngClass]="{'text-green-500 font-bold': quiz.id && isCorrect(quiz.id, variant.letter)}">
             {{ variant.letter }}: {{ variant.variant }}
-          </li> -->
+          </li>          
         </ul>
         <div class="mt-2 flex justify-end space-x-2">
           <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" (click)="editQuiz(quiz)">Edit</button>
@@ -43,4 +43,8 @@
   {{ warningMessage }}
 </srp-warning-component>
 
-<srp-modal-quiz *ngIf="isModalOpen" (closeModal)="closeModal()" [updateModeData]="quizToEdit"></srp-modal-quiz>
+<srp-modal-quiz
+  *ngIf="isModalOpen"
+  [updateModeData]="quizToEdit"
+  (closeModal)="closeModal()"
+></srp-modal-quiz>

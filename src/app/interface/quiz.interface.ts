@@ -14,5 +14,6 @@ export interface Variant {
 export type SelectedVariant = { correct: boolean } & Variant;
 
 export interface QuizCorrect {
+  quizId: string;
   corrects: string[];
 }

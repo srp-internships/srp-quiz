@@ -4,10 +4,8 @@ import {
   addDoc,
   collection,
   doc,
-  getDocs,
-  query,
+  getDoc,
   setDoc,
-  where,
 } from 'firebase/firestore';
 import { QuizCorrect } from '../../interface/quiz.interface';
 
@@ -16,17 +14,26 @@ export class CorrectsService {
   firestore = inject(Firestore);
   correctsCollection = collection(this.firestore, 'corrects');
 
-  addCorrects(quizId: string, correct: QuizCorrect) {
+  async addCorrects(quizId: string, correct: QuizCorrect) {
+    console.log('Adding corrects:', { quizId, correct });
     const docRef = doc(this.correctsCollection, quizId);
-    return setDoc(docRef, correct);
+    const correctsWithId: QuizCorrect = { ...correct, quizId };
+    return setDoc(docRef, correctsWithId, { merge: true });
   }
 
-  async getCorrectAnswers(quizId: string): Promise<QuizCorrect[]> {
-    const correctsQuery = query(
-      this.correctsCollection,
-      where('quizId', '==', quizId)
-    );
-    const correctsSnapshot = await getDocs(correctsQuery);
-    return correctsSnapshot.docs.map((doc) => doc.data() as QuizCorrect);
+  async getCorrects(quizId: string): Promise<QuizCorrect | null> {
+    try {
+      const docRef = doc(this.firestore, 'corrects', quizId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        return docSnap.data() as QuizCorrect;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('error', error);
+      return null;
+    }
   }
 }

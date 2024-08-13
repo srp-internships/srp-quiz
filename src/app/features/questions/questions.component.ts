@@ -1,16 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuizService } from '../../shared/services/quiz.service';
-import { Quiz, Variant } from '../../interface/quiz.interface';
+import { CorrectsService } from '../../shared/services/corrects.service';
+import { Quiz, Variant, QuizCorrect } from '../../interface/quiz.interface';
 import { CommonModule } from '@angular/common';
 import { ToastrService } from 'ngx-toastr';
+import { WarningComponent } from '../../shared/warning-component/warning-component.component';
 
 @Component({
   selector: 'srp-questions',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule , WarningComponent],
   templateUrl: './questions.component.html',
-  styleUrls: ['./questions.component.scss'],
+  styleUrl: './questions.component.scss',
 })
 export class QuestionsComponent implements OnInit {
   quizzes: Quiz[] = [];
@@ -20,12 +22,24 @@ export class QuestionsComponent implements OnInit {
   isLastQuestion: boolean = false;
   correctAnswersCount: number = 0;
   errorMessage: string | null = null;
-  completedTests: { categoryId: string, results: { quiz: Quiz, selectedAnswers: string[], correctVariants: string[], isCorrect: boolean }[] }[] = [];
+  completedTests: {
+    categoryId: string;
+    results: {
+      quiz: Quiz;
+      selectedAnswers: string[];
+      correctVariants: string[];
+      isCorrect: boolean;
+    }[];
+  }[] = [];
+  showWarning: boolean = false;
+  warningMessage: string = "Are you sure you want to exit the test?. Results will not be saved";
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private quizService: QuizService,
+    private correctsService: CorrectsService,
     private toast: ToastrService
   ) {}
 
@@ -42,7 +56,8 @@ export class QuestionsComponent implements OnInit {
   selectAnswer(variant: Variant): void {
     if (!this.showResult) {
       if (this.quizzes[this.currentQuizIndex].multiple) {
-        this.selectedAnswers[variant.letter] = !this.selectedAnswers[variant.letter];
+        this.selectedAnswers[variant.letter] =
+          !this.selectedAnswers[variant.letter];
       } else {
         this.selectedAnswers = { [variant.letter]: true };
       }
@@ -54,86 +69,130 @@ export class QuestionsComponent implements OnInit {
     return this.selectedAnswers[variant.letter] || false;
   }
 
-  submitOrNext(): void {
-    const anyAnswerSelected = Object.values(this.selectedAnswers).includes(true);
-  
+  async submitOrNext(): Promise<void> {
+    const anyAnswerSelected = Object.values(this.selectedAnswers).includes(
+      true
+    );
+
     if (!anyAnswerSelected) {
       this.toast.error('Please select at least one answer.');
       this.showResult = false;
       return;
     }
-  
+
     this.showResult = true;
-    this.calculateCorrectAnswers();
-  
+    await this.calculateCorrectAnswers();
+
     if (this.currentQuizIndex < this.quizzes.length - 1) {
       this.currentQuizIndex++;
       this.selectedAnswers = {};
       this.showResult = false;
       this.errorMessage = null;
-  
+
       this.checkIfLastQuestion();
     } else {
       this.saveCompletedTest();
       const categoryId = this.route.snapshot.paramMap.get('categoryId');
-      this.router.navigate(['/rating', categoryId], {
-        queryParams: {
-          correct: this.correctAnswersCount,
-          total: this.quizzes.length
-        }
-      });
+      if (categoryId) {
+        this.router.navigate(['/rating', categoryId], {
+          queryParams: {
+            correct: this.correctAnswersCount,
+            total: this.quizzes.length,
+          },
+        });
+      }
     }
   }
-  
+
   private checkIfLastQuestion(): void {
     this.isLastQuestion = this.currentQuizIndex === this.quizzes.length - 1;
   }
 
-  private calculateCorrectAnswers(): void {
+  private async calculateCorrectAnswers(): Promise<void> {
     const currentQuiz = this.quizzes[this.currentQuizIndex];
+
     const selectedAnswers = new Set<string>(
       Object.keys(this.selectedAnswers).filter(
         (letter) => this.selectedAnswers[letter]
       )
     );
-    const correctAnswers = new Set<string>(
-      currentQuiz.variants
-        // .filter((variant) => variant.correct)
-        .map((variant) => variant.letter)
-    );
 
-    const isCorrect = currentQuiz.multiple
-      ? correctAnswers.size === selectedAnswers.size &&
-        [...correctAnswers].every((answer) => selectedAnswers.has(answer))
-      : correctAnswers.has([...selectedAnswers][0]);
+    if (currentQuiz.id) {
+      const correctAnswers = await this.correctsService.getCorrects(
+        currentQuiz.id
+      );
+      if (correctAnswers) {
+        const correctAnswersSet = new Set<string>(correctAnswers.corrects);
 
-    if (isCorrect) {
-      this.correctAnswersCount++;
+        const isCorrect = currentQuiz.multiple
+          ? correctAnswersSet.size === selectedAnswers.size &&
+            [...correctAnswersSet].every((answer) =>
+              selectedAnswers.has(answer)
+            )
+          : correctAnswersSet.has([...selectedAnswers][0]);
+
+        if (isCorrect) {
+          this.correctAnswersCount++;
+        }
+
+        this.saveQuizResult(
+          currentQuiz,
+          Array.from(selectedAnswers),
+          Array.from(correctAnswersSet),
+          isCorrect
+        );
+      }
     }
-
-    this.saveQuizResult(currentQuiz, Array.from(selectedAnswers), Array.from(correctAnswers), isCorrect);
   }
 
-  private saveQuizResult(quiz: Quiz, selectedAnswers: string[], correctVariants: string[], isCorrect: boolean): void {
+  private saveQuizResult(
+    quiz: Quiz,
+    selectedAnswers: string[],
+    correctVariants: string[],
+    isCorrect: boolean
+  ): void {
     const categoryId = this.route.snapshot.paramMap.get('categoryId');
     if (categoryId) {
-      const existingTest = this.completedTests.find(test => test.categoryId === categoryId);
+      const existingTest = this.completedTests.find(
+        (test) => test.categoryId === categoryId
+      );
       if (existingTest) {
-        existingTest.results.push({ quiz, selectedAnswers, correctVariants, isCorrect });
+        existingTest.results.push({
+          quiz,
+          selectedAnswers,
+          correctVariants,
+          isCorrect,
+        });
       } else {
         this.completedTests.push({
           categoryId: categoryId,
-          results: [{ quiz, selectedAnswers, correctVariants, isCorrect }]
+          results: [{ quiz, selectedAnswers, correctVariants, isCorrect }],
         });
       }
     }
   }
 
   private saveCompletedTest(): void {
-    sessionStorage.setItem('completedTests', JSON.stringify(this.completedTests));
+    sessionStorage.setItem(
+      'completedTests',
+      JSON.stringify(this.completedTests)
+    );
   }
 
   private shuffleArray(array: Quiz[]): Quiz[] {
     return array.sort(() => Math.random() - 0.5);
+  }
+
+  showExitWarning(): void {
+    this.showWarning = true;
+  }
+
+  handleExit(): void {
+    this.showWarning = false;
+    this.router.navigate(['/student']);
+  }
+
+  closeWarning(): void {
+    this.showWarning = false;
   }
 }

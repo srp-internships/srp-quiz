@@ -53,6 +53,7 @@
         }}
       </button>
       <button
+      (click)="showExitWarning()"
         class="bg-red-500 text-white hover:bg-red-600 font-medium px-4 py-2 rounded-lg mt-4"
       >
         Exit
@@ -63,3 +64,11 @@
     <p>Loading...</p>
   </div>
 </div>
+
+<srp-warning-component 
+  *ngIf="showWarning" 
+  [isVisible]="showWarning"
+  (onConfirm)="handleExit()"
+  (onCancel)="closeWarning()">
+  {{ warningMessage }}
+</srp-warning-component>

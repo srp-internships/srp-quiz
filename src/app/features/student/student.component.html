@@ -1,8 +1,23 @@
 <div class="container mx-auto p-6">
-  <h1 class="text-3xl font-bold mb-6 text-center">Categories of questions</h1>
+  <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Categories of Questions</h1>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let category of categories" (click)="goToQuestions(category.id)" class="bg-white rounded-lg shadow-md p-4 border border-gray-200 cursor-pointer">
-      <h2 class="text-xl font-semibold">{{ category.name }}</h2>
+    <div 
+      *ngFor="let category of categories" 
+      (click)="goToQuestions(category.id)" 
+      class="relative bg-white rounded-lg shadow-lg hover:shadow-xl transition-transform duration-300 ease-in-out transform hover:scale-105 cursor-pointer overflow-hidden"
+    >
+      <div 
+        class="absolute inset-0 bg-cover bg-center transition-opacity duration-300 ease-in-out"
+        style="background-image: url('path/to/image.jpg');"
+      ></div>
+      <div 
+        class="relative rounded-lg p-4 text-white bg-white transition-colors duration-300 ease-in-out hover:bg-blue-400"
+      >
+        <h2 class="text-2xl font-semibold mb-2 transition-colors duration-300 ease-in-out text-black ">
+          {{ category.name }}
+        </h2>
+        <p class="text-sm transition-colors duration-300 ease-in-out text-black ">Count of questions: {{ category.questionCount || 0 }}</p>
+      </div>
     </div>
   </div>
 </div>
