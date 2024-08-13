@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Quiz } from '../../interface/quiz.interface';
+import { Quiz, Variant } from '../../interface/quiz.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -67,5 +67,10 @@ export class RatingComponent implements OnInit {
   clearSessionStorageAndNavigate(): void {
     sessionStorage.removeItem('completedTests');
     this.router.navigate(['/student']);
+  }
+
+  getVariantText(letter: string, variants: Variant[]): string {
+    const variant = variants.find(v => v.letter === letter);
+    return variant ? `${variant.letter}. ${variant.variant}` : letter;
   }
 }

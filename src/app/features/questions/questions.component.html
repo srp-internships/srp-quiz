@@ -2,10 +2,19 @@
   <div *ngIf="quizzes.length > 0">
     <div class="flex justify-center gap-2 mb-4">
       <span
-        *ngFor="let index of quizzes; let i = index"
-        [ngClass]="{'bg-gray-600': i <= currentQuizIndex, 'bg-gray-300': i > currentQuizIndex}"
+        *ngFor="let quiz of quizzes; let i = index"
+        [ngClass]="{
+          'bg-green-500': quiz.isCorrect === true,
+          'bg-red-500': quiz.isCorrect === false,
+          'bg-gray-600': quiz.isCorrect === undefined && i <= currentQuizIndex,
+          'bg-gray-300': i > currentQuizIndex
+        }"
         class="w-3 h-3 rounded-full"
       ></span>
+    </div>
+
+    <div class="text-center mb-4 text-xl font-semibold">
+      Question {{ currentQuizIndex + 1 }}/{{ quizzes.length }}
     </div>
 
     <h2 class="text-2xl font-bold mb-4">
@@ -46,14 +55,10 @@
         (click)="submitOrNext()"
         class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-lg mt-4"
       >
-        {{
-          isLastQuestion
-            ? "Finish"
-            : "Next Question"
-        }}
+        {{ isLastQuestion ? "Finish" : "Next Question" }}
       </button>
       <button
-      (click)="showExitWarning()"
+        (click)="showExitWarning()"
         class="bg-red-500 text-white hover:bg-red-600 font-medium px-4 py-2 rounded-lg mt-4"
       >
         Exit

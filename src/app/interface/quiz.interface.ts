@@ -4,6 +4,7 @@ export interface Quiz {
   multiple: boolean;
   question: string;
   variants: Variant[];
+  isCorrect?: boolean; 
 }
 
 export interface Variant {

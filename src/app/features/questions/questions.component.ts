@@ -131,6 +131,7 @@ export class QuestionsComponent implements OnInit {
             )
           : correctAnswersSet.has([...selectedAnswers][0]);
 
+        this.quizzes[this.currentQuizIndex].isCorrect = isCorrect;
         if (isCorrect) {
           this.correctAnswersCount++;
         }
