@@ -1,11 +1,11 @@
-<div class="container mx-auto w-full my-10 p-8 bg-white rounded-lg shadow-md">
+<div class="container mx-auto w-full my-10 p-8 bg-[#F2F2F2] rounded-lg shadow-md">
   <div *ngIf="quizzes.length > 0">
-    <div class="flex justify-center gap-2 mb-4">
+    <div class="flex justify-center gap-2 mb-4 flex-wrap">
       <span
         *ngFor="let quiz of quizzes; let i = index"
         [ngClass]="{
-          'bg-green-500': quiz.isCorrect === true,
-          'bg-red-500': quiz.isCorrect === false,
+          'bg-green-700': quiz.isCorrect === true,
+          'bg-red-700': quiz.isCorrect === false,
           'bg-gray-600': quiz.isCorrect === undefined && i <= currentQuizIndex,
           'bg-gray-300': i > currentQuizIndex
         }"
@@ -13,59 +13,63 @@
       ></span>
     </div>
 
-    <div class="text-center mb-4 text-xl font-semibold">
+    <div class="text-center mb-4 text-xl font-semibold text-gray-800">
       Question {{ currentQuizIndex + 1 }}/{{ quizzes.length }}
     </div>
 
-    <h2 class="text-2xl font-bold mb-4">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">
       {{ quizzes[currentQuizIndex].question }}
     </h2>
+
     <div *ngIf="quizzes[currentQuizIndex].multiple">
       <div class="space-y-2">
         <div
           *ngFor="let variant of quizzes[currentQuizIndex].variants"
-          class="flex items-center p-4 border border-gray-300 rounded-lg"
+          class="flex items-center p-4 border border-gray-500 rounded-lg bg-white shadow-sm"
         >
           <input
             type="checkbox"
             [checked]="isSelected(variant)"
             (change)="selectAnswer(variant)"
-            class="h-6 w-6 text-blue-600 mr-4"
+            class="h-6 w-6 text-gray-700 mr-4"
             [disabled]="showResult"
           />
           <span class="text-lg">{{ variant.letter }}. {{ variant.variant }}</span>
         </div>
       </div>
     </div>
+
     <div *ngIf="!quizzes[currentQuizIndex].multiple">
       <div class="space-y-2">
         <button
           *ngFor="let variant of quizzes[currentQuizIndex].variants"
           (click)="selectAnswer(variant)"
-          [ngClass]="{ 'bg-blue-500 text-white': isSelected(variant) }"
-          class="w-full text-left px-4 py-2 rounded-lg border border-gray-300"
+          [ngClass]="{ 'bg-gray-700 text-white': isSelected(variant) }"
+          class="w-full text-left px-4 py-2 rounded-lg border border-gray-500 bg-gray-100 hover:bg-gray-200"
           [disabled]="showResult"
         >
           {{ variant.letter }}. {{ variant.variant }}
         </button>
       </div>
     </div>
-    <div class="flex justify-between">
+
+    <div class="flex flex-col sm:flex-row justify-between gap-4 mt-4">
       <button
         (click)="submitOrNext()"
-        class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-lg mt-4"
+        class="bg-gray-800 text-white hover:bg-gray-900 font-medium px-4 py-2 rounded-lg"
       >
         {{ isLastQuestion ? "Finish" : "Next Question" }}
       </button>
       <button
         (click)="showExitWarning()"
-        class="bg-red-500 text-white hover:bg-red-600 font-medium px-4 py-2 rounded-lg mt-4"
+        class="bg-red-700 text-white hover:bg-red-800 font-medium px-4 py-2 rounded-lg"
       >
         Exit
       </button>
     </div>
   </div>
-  <div *ngIf="quizzes.length === 0">
+
+  <div *ngIf="quizzes.length === 0" class="text-center text-gray-600">
     <p>Loading...</p>
   </div>
 </div>
