@@ -1,0 +1,113 @@
+.text-green-600 {
+  color: #16a34a;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-red-600 {
+  color: #dc2626;
+}
+
+.container {
+  text-align: center;
+}
+
+.circle-chart {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.circle {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: conic-gradient(green 0%, red 0% 100%);
+}
+
+.score {
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  position: absolute;
+}
+
+.circle-info {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.score {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.list-none {
+  list-style-type: none;
+}
+
+.border-b {
+  border-bottom: 1px solid #ccc;
+}
+
+.pl-0 {
+  padding-left: 0;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.bg-gray-50 {
+  background-color: #f9fafb;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.bg-blue-100 {
+  background-color: #ebf8ff;
+}
+
+.bg-green-100 {
+  background-color: #f0fff4;
+}
+.transitionCard {
+  overflow: hidden;
+  transition: max-height 0.2s ease-out, opacity 0.5s ease;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.transitionCard.open {
+  max-height: 200px; 
+  opacity: 2;
+}

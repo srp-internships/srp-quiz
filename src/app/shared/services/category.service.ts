@@ -14,6 +14,12 @@ export class CategoryService {
     return collectionData(queryCategories, { idField: 'id' });
   }
 
+  getQuestionsByCategory(categoryId: string): Observable<any[]> {
+    const questionsCollection = collection(this.firestore, 'questions');
+    const queryQuestions = query(questionsCollection, where('categoryId', '==', categoryId));
+    return collectionData(queryQuestions, { idField: 'id' });
+  }
+
   addCategory(name: string): Promise<any> {
     const categoriesCollection = collection(this.firestore, 'categories');
     return addDoc(categoriesCollection, { name, deleted: false });

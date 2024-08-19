@@ -4,12 +4,17 @@ export interface Quiz {
   multiple: boolean;
   question: string;
   variants: Variant[];
-  correct?: boolean;
-
+  isCorrect?: boolean; 
 }
 
 export interface Variant {
   letter: string;
   variant: string;
-  correct?: boolean;
+}
+
+export type SelectedVariant = { correct: boolean } & Variant;
+
+export interface QuizCorrect {
+  quizId: string;
+  corrects: string[];
 }

@@ -1,46 +1,89 @@
-<div class="container mx-auto w-full my-10 p-8 bg-white rounded-lg shadow-md">
-  <p class="text-2xl font-semibold mb-4">Quizzes</p>
+<div
+  class="container mx-auto w-full my-10 p-4 sm:p-8 bg-[#F2F2F2] rounded-lg shadow-md"
+>
+  <p class="text-2xl font-semibold mb-4 text-center text-gray-900">Quizzes</p>
 
-  <div class="flex justify-between items-center mb-4">
-    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" (click)="openModal()">
+  <div
+    class="flex flex-col sm:flex-row sm:justify-between items-center mb-4 space-y-4 sm:space-y-0"
+  >
+    <button
+      class="bg-gray-800 text-white hover:bg-gray-900 px-4 py-2 rounded w-full sm:w-auto"
+      (click)="openModal()"
+    >
       Create Quiz
     </button>
-    <div class="w-1/3">
-      <select class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" (change)="onCategoryChange($event)">
+    <div class="w-full sm:w-1/3">
+      <select
+        class="w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        (change)="onCategoryChange($event)"
+      >
         <option value="" disabled selected>Select category</option>
-        <option *ngFor="let category of categories$ | async" [value]="category.id">{{ category.name }}</option>
+        <option
+          *ngFor="let category of categories$ | async"
+          [value]="category.id"
+        >
+          {{ category.name }}
+        </option>
       </select>
     </div>
   </div>
 
   <div class="my-4" *ngIf="quizzes$ | async as quizzes; else noQuizzes">
     <ng-container *ngIf="quizzes.length > 0; else noQuizzes">
-      <div *ngFor="let quiz of quizzes" class="bg-white rounded-lg mb-3 shadow-md p-4">
-        <h3 class="font-medium text-lg mb-2">{{ quiz.question }}</h3>
+      <div
+        *ngFor="let quiz of quizzes"
+        class="bg-gray-100 rounded-lg mb-3 shadow-md p-4"
+      >
+        <h3 class="font-medium text-lg mb-2 text-gray-900">
+          {{ quiz.question }}
+        </h3>
         <ul class="list-disc list-inside mb-2">
-          <li *ngFor="let variant of quiz.variants" [ngClass]="{'font-bold': variant.correct, 'text-green-500': variant.correct}">
+          <li
+            *ngFor="let variant of quiz.variants"
+            [ngClass]="{
+              'text-green-600 font-bold':
+                quiz.id && isCorrect(quiz.id, variant.letter)
+            }"
+          >
             {{ variant.letter }}: {{ variant.variant }}
           </li>
         </ul>
-        <div class="mt-2 flex justify-end space-x-2">
-          <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" (click)="editQuiz(quiz)">Edit</button>
-          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" (click)="confirmDelete(quiz.id)">Delete</button>
+        <div
+          class="mt-2 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2"
+        >
+          <button
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            (click)="editQuiz(quiz)"
+          >
+            Edit
+          </button>
+          <button
+            class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded"
+            (click)="confirmDelete(quiz.id)"
+          >
+            Delete
+          </button>
         </div>
       </div>
     </ng-container>
   </div>
 
   <ng-template #noQuizzes>
-    No quizzes available.
+    <p class="text-center text-gray-600">No quizzes available.</p>
   </ng-template>
 </div>
 
-<srp-warning-component 
-  *ngIf="showWarning" 
+<srp-warning-component
+  *ngIf="showWarning"
   [isVisible]="showWarning"
   (onConfirm)="handleDeleteConfirmation()"
-  (onCancel)="closeModal()">
+  (onCancel)="closeModal()"
+>
   {{ warningMessage }}
 </srp-warning-component>
 
-<srp-modal-quiz *ngIf="isModalOpen" (closeModal)="closeModal()" [updateModeData]="quizToEdit"></srp-modal-quiz>
+<srp-modal-quiz
+  *ngIf="isModalOpen"
+  [updateModeData]="quizToEdit"
+  (closeModal)="closeModal()"
+></srp-modal-quiz>
