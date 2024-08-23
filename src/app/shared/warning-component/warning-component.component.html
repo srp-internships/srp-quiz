@@ -1,0 +1,20 @@
+<div *ngIf="isVisible" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+    <div class="flex justify-center">
+      <svg class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(255,0,0,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 15H13V17H11V15ZM11 7H13V13H11V7Z"></path></svg>
+    </div> 
+    <div class="flex items-center mb-4">
+        <p class="text-red-700">
+        <ng-content></ng-content>
+      </p>
+    </div>
+    <div class="flex justify-end space-x-4">
+      <button (click)="confirm()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+        Confirm
+      </button>
+      <button (click)="cancel()" class="bg-gray-200 text-gray-800 hover:bg-gray-300 font-medium px-4 py-2 rounded-lg">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

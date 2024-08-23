@@ -1,0 +1,61 @@
+<div class="container mx-auto w-full my-10 p-8 bg-[#F2F2F2] rounded-lg shadow-md">
+  <h2 class="mb-4 text-2xl font-bold text-center text-gray-800">Categories</h2>
+
+  <div class="flex flex-col sm:flex-row mb-4 gap-2">
+    <input
+      (keydown.enter)="saveCategory()"
+      type="text"
+      placeholder="Category Name"
+      class="px-3 py-2 border border-gray-400 rounded w-full bg-white text-gray-800"
+      [(ngModel)]="currentCategory.name"
+    />
+    <div class="flex gap-2 mt-2 sm:mt-0">
+      <button
+        class="bg-gray-800 text-white hover:bg-gray-900 px-4 py-2 rounded w-full sm:w-auto"
+        (click)="saveCategory()"
+      >
+        {{ currentCategory.id ? "Update" : "Create" }}
+      </button>
+      <button
+        *ngIf="currentCategory.id"
+        class="bg-gray-600 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-gray-700"
+        (click)="cancelEdit()"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="categories$ | async as categories; else loading">
+    <ul>
+      <li
+        *ngFor="let category of categories"
+        class="py-4 border-b border-gray-300"
+      >
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+          <h3 class="text-lg font-semibold text-gray-800 text-center sm:text-left">
+            {{ category.name }}
+          </h3>
+          <div class="flex gap-2 mt-2 sm:mt-0 justify-center">
+            <button
+              class="text-white px-4 py-2 rounded-md bg-green-600 w-full sm:w-auto hover:bg-green-700"
+              (click)="editCategory(category)"
+            >
+              Edit
+            </button>
+            <button
+              class="px-4 py-2 rounded-md bg-red-700 text-white hover:bg-red-800 w-full sm:w-auto"
+              (click)="deleteCategory(category.id)"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <ng-template #loading>
+    <p class="text-gray-600">Loading...</p>
+  </ng-template>
+</div>
